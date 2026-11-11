@@ -5,3 +5,8 @@ dist-ssr
 *.local
 .DS_Store
 .vite
+
+# Local course data and Python caches
+.local-data/
+__pycache__/
+*.pyc

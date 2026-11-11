@@ -1,47 +1,54 @@
 # 课迹
 
-面向大学课程的 AI 辅助学习演示。把课表、资料、回放、作业和备考放在一起，并让每条辅导都能回到课堂来源。
+课程资料、截止与辅导的统一入口。第二阶段将资料收集和看板接入本地API与SQLite；回放、作业辅导、备考保留第一阶段原型，导航中已标明。
 
-当前是可点击原型：内容写在本地，不连接教学网。浏览器里的勾选和确认保存在 `localStorage`。
+## 运行
+
+需要 Node 20.19+/22.12+、Python 3.10+。后端仅使用Python标准库。
+
+```sh
+npm ci
+npm run build
+python3 server/app.py
+```
+
+打开 http://127.0.0.1:8765 。服务仅监听本机，数据库默认`.local-data/courses.sqlite3`，不入Git。
+
+开发时分别运行`python3 server/app.py`和`npm run dev`，打开 http://127.0.0.1:5173 。API默认8765，Vite已配置代理；改变API端口时同步调整代理。
+
+```sh
+npm test
+npm run build
+```
+
+## 可运行的资料流程
+
+1. 打开“资料收集”，按教学网导入流程采集真实课程；也可填写文字或导入JSON清单。
+2. 观察新增/更新/未变化计数；按课程、类型、关键词检索；打开原始来源、查看历史版本。
+3. 看板展示带时区的截止项，勾选状态刷新后仍保留。标记完成仅是本地记录，不代表已向教学网提交。
+
+支持从Chrome已登录教学网课程采集通知、作业和课件目录。先由用户确认加载browser-extension扩展；在课迹资料页复制临时连接码，采集预览后导入。手动文字/JSON仍可补充。登录由学生完成，不导出Cookie，不下载附件正文，不解析PDF或调用模型。详见docs/stage2/blackboard-import.md。同一课程+来源URL+定位对应同一记录；内容变化新增版本，来源改变视为新记录。
 
 ## 目录
 
-| 路径 | 内容 |
-| --- | --- |
-| `src/views/DashboardView.vue` | 课程看板 |
-| `src/views/MaterialsView.vue` | 资料收集 |
-| `src/views/ReplayView.vue` | 回放整理 |
-| `src/views/AssignmentsView.vue` | 作业辅导 |
-| `src/views/PrepView.vue` | 备考 |
-| `src/views/HelloView.vue` | `/test/hello` |
-| `src/data/` | 各模块的演示数据，入口是 `catalog.js` |
-| `src/composables/usePlatform.js` | 筛选、勾选、确认、模拟卷等本机状态 |
-| `src/router.js` | 路径切换 |
-| `src/App.vue` | 侧栏和顶栏 |
-| `src/style.css` | 界面样式 |
+|目录/文件|用途|
+|---|---|
+|server/domain.py|批次与来源验证|
+|server/repository.py|SQLite事务、去重、版本和学生状态|
+|server/app.py|本地API和生产前端服务|
+|src/composables/useCourseStore.js|前端API状态|
+|src/views/MaterialsView.vue|真实资料导入、检索、版本|
+|src/views/DashboardView.vue|真实课程看板|
+|src/data/、其他功能页面|第一阶段预设演示内容|
+|docs/stage2/|分析设计、图示、AI报告、进度和演示材料|
+|features.md、architecture.md、gantt-tasks.md|来自feature/add-doc分支的原规划及阶段修订|
 
-改某一门功能时，优先只动对应的 `views` 文件和 `data` 文件。
+原看板/资料原型保留在`/demo/dashboard`和`/demo/materials`；`/test/hello`继续可用。
 
-## 本地运行
+本地版本为单用户演示，不适合公网或多人使用。不要上传数据库、教学网认证信息或未经许可的课程全文。
 
-```bash
-npm install
-npm run dev
-```
+## 按原甘特图补齐课表
 
-打开 http://127.0.0.1:5173/ 。侧栏「重置演示」恢复初始数据。
+课表采集、校验、来源追溯与看板展示已实现。实际课程信息由组内保留，公开分支使用合成示例；20项测试通过。
 
-## 演示顺序
-
-1. 课程看板：看今天的课、教室，以及来自微信群、课程网站、教学网的三个截止。勾掉一条学习任务。
-2. 回放整理：打开「第5讲 用例与需求规格」，点时间点对照转写，再点「整理成学习任务」。
-3. 回到看板，确认新任务出现。
-4. 作业辅导：打开需求规格说明书，看草稿上的来源，点「确认这份草稿」。再打开操作系统实验，确认资料不足时不会生成报告。
-5. 备考：生成大纲，选一道往年题看解析，做完三题模拟后交卷。
-6. 打开 `/test/hello`，页面上有 `hello world`。
-
-右上角可以按课程筛选。演示数据里，数据结构作业只提示写法，不给出最终遍历序列。
-
-## 和参考项目的差别
-
-[AutoPku](https://github.com/WindGraham/AutoPku) 在本机用 Agent 拉取教学网通知并处理作业。课迹是网页，学生先看到来源和待确认任务，再决定是否采用草稿。
+真实课程名称、时间地点、教学网页面截图、联调快照和含真实内容的汇报PPT未纳入公开PR，由组内单独保留。本公开分支中的课程信息均为示例；实际验收结论见组内材料。

@@ -1,0 +1,9 @@
+{
+  "manifest_version": 3,
+  "name": "课迹 · 教学网导入助手",
+  "version": "0.2.0",
+  "description": "点击后只读采集当前北大教学网课程的通知、作业和课件目录，预览后导入本机课迹。",
+  "permissions": ["activeTab", "scripting"],
+  "host_permissions": ["http://127.0.0.1/*"],
+  "action": {"default_popup": "popup.html", "default_title": "导入当前教学网课程"}
+}

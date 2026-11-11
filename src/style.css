@@ -804,3 +804,23 @@ h1 {
     font-size: 26px;
   }
 }
+
+/* Stage 2: imported course workspace. */
+.import-box { margin-top: 20px; }
+.import-box summary { font-size: 17px; font-weight: 600; cursor: pointer; }
+.import-form { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 18px; }
+.import-form label, .file-label { display: flex; flex-direction: column; gap: 7px; font-size: 13px; }
+.import-form input, .import-form select, textarea, .filters select, .section-title select { border: 1px solid var(--color-line); border-radius: 10px; padding: 10px; background: #fff; font: inherit; min-width: 0; }
+textarea { display: block; box-sizing: border-box; width: 100%; margin: 8px 0 16px; resize: vertical; }
+.span-all { grid-column: 1 / -1; }
+.source-content { white-space: pre-wrap; overflow-wrap: anywhere; }
+.version-list { margin-top: 16px; border-top: 1px solid var(--color-line); padding-top: 12px; }
+.version-list details { padding: 8px; }
+.stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin: 24px 0; }
+.stats article { background: var(--color-card); border: 1px solid var(--color-line); padding: 20px; border-radius: 16px; }
+.stats strong { display: block; font-size: 30px; font-family: var(--font-serif); }
+.stats span { color: var(--color-muted); font-size: 13px; }
+@media (max-width: 820px) { .import-form { grid-template-columns: 1fr; } .stats { gap: 6px; } .stats article { padding: 12px; } }
+.sync-summary { margin-top: 18px; border-top: 1px solid var(--color-line); padding-top: 14px; }
+.attachment-list { margin: 12px 0; padding-left: 22px; }
+.attachment-list li { margin: 5px 0; overflow-wrap: anywhere; }

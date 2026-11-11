@@ -1,0 +1,9 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>课迹教学网导入</title>
+<style>body{width:390px;margin:0;padding:22px;box-sizing:border-box;font:14px/1.6 system-ui;background:#f3efe6;color:#263c31}h1{font-size:23px;margin:0 0 10px}button,input{font:inherit;padding:9px;border:1px solid #c9c6bb;border-radius:8px}button{cursor:pointer;background:#263c31;color:#fff;margin:8px 0}button:disabled{opacity:.5}input{width:100%;box-sizing:border-box}pre{white-space:pre-wrap;background:#fffdf8;border-radius:8px;padding:12px;font:13px/1.6 system-ui}a{color:#263c31}.muted{color:#6f675c;font-size:12px}.error{color:#a33}</style>
+<h1>导入当前教学网课程</h1><p>在已登录的课程页面点击采集，核对数量后导入本机课迹。只读课程课表、通知、作业要求与课件目录。</p>
+<button id="collect">采集当前课程</button><pre id="status" role="status">尚未采集</pre>
+<label>课迹连接码<input id="key" type="password" autocomplete="off" placeholder="从课迹资料页复制" /></label>
+<button id="send" disabled>确认导入课迹</button><p id="error" class="error" role="alert"></p>
+<a href="http://127.0.0.1:8765/materials" target="_blank">打开课迹资料页 ↗</a>
+<p class="muted">不读取或保存Cookie、密码、成绩及作业答案。不下载附件正文，不提交教学网。关闭弹窗后采集结果和连接码清空。</p>
+<script src="popup.js"></script></html>

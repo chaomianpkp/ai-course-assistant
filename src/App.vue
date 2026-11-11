@@ -1,11 +1,14 @@
 <script setup>
-import { computed, watch } from 'vue'
+import { computed, watch, onMounted } from 'vue'
 import AssignmentsView from './views/AssignmentsView.vue'
 import DashboardView from './views/DashboardView.vue'
 import HelloView from './views/HelloView.vue'
 import MaterialsView from './views/MaterialsView.vue'
 import PrepView from './views/PrepView.vue'
 import ReplayView from './views/ReplayView.vue'
+import DashboardDemoView from './views/DashboardDemoView.vue'
+import MaterialsDemoView from './views/MaterialsDemoView.vue'
+import { useCourseStore } from './composables/useCourseStore'
 import { usePlatform } from './composables/usePlatform'
 import { formatToday } from './data/catalog'
 import { useRouter } from './router'
@@ -13,9 +16,9 @@ import { useRouter } from './router'
 const nav = [
   { to: '/', label: '课程看板', hint: '时间、教室、截止' },
   { to: '/materials', label: '资料收集', hint: '课件、书和相关课' },
-  { to: '/replay', label: '回放整理', hint: '转写、摘要、知识点' },
-  { to: '/assignments', label: '作业辅导', hint: '来源和可确认草稿' },
-  { to: '/prep', label: '备考', hint: '大纲、旧题、模拟' },
+  { to: '/replay', label: '回放整理（原型）', hint: '转写、摘要、知识点' },
+  { to: '/assignments', label: '作业辅导（原型）', hint: '来源和可确认草稿' },
+  { to: '/prep', label: '备考（原型）', hint: '大纲、旧题、模拟' },
 ]
 
 const views = {
@@ -25,6 +28,8 @@ const views = {
   '/assignments': AssignmentsView,
   '/prep': PrepView,
   '/test/hello': HelloView,
+  '/demo/dashboard': DashboardDemoView,
+  '/demo/materials': MaterialsDemoView,
 }
 
 const titles = {
@@ -37,7 +42,14 @@ const titles = {
 }
 
 const { path, push } = useRouter()
-const { state, courses, resetDemo } = usePlatform()
+const { state, courses: demoCourses, resetDemo } = usePlatform()
+const { data, load } = useCourseStore()
+const isLive = computed(() => ['/', '/materials'].includes(path.value))
+const courses = computed(() => isLive.value ? data.courses : demoCourses)
+onMounted(load)
+watch([path, () => data.courses.length], () => {
+  if (state.courseId !== 'all' && !courses.value.some((c) => c.id === state.courseId)) state.courseId = 'all'
+})
 const view = computed(() => views[path.value] || null)
 const todayLabel = formatToday()
 
@@ -77,8 +89,8 @@ function open(to) {
         </button>
       </nav>
       <div class="rail-foot">
-        <p>演示数据保存在这台浏览器里，不连接教学网。</p>
-        <button type="button" @click="resetDemo">重置演示</button>
+        <p>看板与资料由本地服务保存。回放、作业辅导与备考为第一阶段原型。</p>
+        <button type="button" @click="resetDemo">重置原型状态</button>
         <button class="hello-link" type="button" @click="open('/test/hello')">/test/hello</button>
       </div>
     </aside>
@@ -96,6 +108,7 @@ function open(to) {
           </select>
         </label>
       </header>
+      <div v-if="isLive && data.error" class="page"><p class="note block" role="alert">{{ data.error }}</p><button class="ghost" @click="load">重新连接</button></div>
       <component :is="view" v-if="view" />
       <main v-else class="page">
         <p class="kicker">课迹</p>

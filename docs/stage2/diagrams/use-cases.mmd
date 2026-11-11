@@ -1,0 +1,17 @@
+flowchart LR
+    Student[学生]
+    subgraph System[课迹：第二阶段分析范围]
+      Import([导入教学网课程])
+      Validate([校验来源与字段])
+      Search([检索与追溯版本])
+      Track([查看课表与标记截止])
+      Generate([申请作业辅导草稿：设计])
+      Review([核对引用并确认：设计])
+    end
+    Student --- Import
+    Student --- Search
+    Student --- Track
+    Student --- Generate
+    Student --- Review
+    Import -. 必需步骤 .-> Validate
+    Generate -. 包含资料检索 .-> Search

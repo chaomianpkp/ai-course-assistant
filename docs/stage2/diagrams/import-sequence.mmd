@@ -1,0 +1,23 @@
+sequenceDiagram
+  participant S as 学生
+  participant P as 资料页
+  participant C as ImportController
+  participant V as CourseImport
+  participant R as CourseRepository
+  S->>P: 填写或选择JSON并确认
+  P->>C: POST /api/imports
+  C->>V: parse(body)
+  alt 来源或字段非法
+    V-->>C: ValidationError
+    C-->>P: 400，全部不写入
+  else 校验通过
+    V-->>C: CourseImport
+    C->>R: save_import(bundle)
+    Note over R: 单事务写课程、记录、版本、批次
+    R-->>C: 新增/更新/未变化计数
+    C-->>P: 200 + 计数
+    P->>C: GET /api/catalog
+    C->>R: catalog()
+    R-->>C: 来源、版本、资料和截止
+    C-->>P: 200 + 课程目录
+  end

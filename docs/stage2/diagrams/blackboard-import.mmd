@@ -1,0 +1,17 @@
+sequenceDiagram
+  participant S as 学生
+  participant E as Chrome导入助手
+  participant B as 教学网
+  participant A as 本机课迹API
+  participant R as SQLite仓储
+  S->>E: 当前课程点击采集
+  E->>B: GET 通知/作业/课件目录
+  B-->>E: 当前会话可读的课程页面
+  E->>E: 解析并校验同课程/截止依据
+  E-->>S: 预览数量与冲突项
+  S->>E: 使用本机连接码确认导入
+  E->>A: POST /api/blackboard/imports
+  A->>A: 连接码、三栏目覆盖及字段验证
+  A->>R: 原子导入资料/版本/最近核查
+  R-->>A: 新增/更新/未变化
+  A-->>E: 导入结果

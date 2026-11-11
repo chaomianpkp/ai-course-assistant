@@ -1,0 +1,39 @@
+classDiagram
+  class Assignment {
+    id
+    requirement
+    source
+  }
+  class GuidanceJob {
+    id
+    status
+    contextVersion
+  }
+  class Draft {
+    id
+    status
+  }
+  class DraftSection {
+    body
+    citations
+  }
+  class ContextSnapshot {
+    id
+    materialVersionIds
+  }
+  class ReviewRecord {
+    draftId
+    decision
+    recordedAt
+  }
+  class GuidanceWorker {
+    <<active>>
+    processJob()
+  }
+  Assignment "1" -- "0..*" GuidanceJob : 请求辅导
+  GuidanceJob "1" --> "1" ContextSnapshot : 固定依据
+  GuidanceJob "1" --> "0..1" Draft : 产出
+  Draft "1" *-- "1..*" DraftSection : 组成
+  DraftSection ..> ContextSnapshot : 引用所选版本
+  Draft "1" -- "0..*" ReviewRecord : 人工决定
+  GuidanceWorker ..> GuidanceJob : 异步处理

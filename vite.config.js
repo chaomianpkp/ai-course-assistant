@@ -6,5 +6,7 @@ export default defineConfig({
   plugins: [vue(), tailwindcss()],
   server: {
     port: 5173,
+    strictPort: true,
+    proxy: { '/api': 'http://127.0.0.1:8765' },
   },
 })
