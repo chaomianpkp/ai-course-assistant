@@ -1,0 +1,29 @@
+{
+  "course": {
+    "id": "pku-se",
+    "name": "软件工程"
+  },
+  "materials": [
+    {
+      "title": "第二阶段分析设计与演示要求",
+      "category": "课程说明",
+      "content": "选择两个核心功能开展面向对象分析设计，提供必要图示；展示至少一个已实现的核心功能、项目进度及Git应用情况。",
+      "source": {
+        "title": "2026秋季软件工程课程实践说明",
+        "url": "https://course.pku.edu.cn/webapps/blackboard/content/listContent.jsp?course_id=_104129_1&content_id=_1698710_1&mode=reset",
+        "locator": "第12–13页：第二阶段"
+      }
+    }
+  ],
+  "deadlines": [
+    {
+      "title": "第二阶段文档提交",
+      "due": "2026-11-19T23:59:00+08:00",
+      "source": {
+        "title": "2026秋季软件工程课程实践说明",
+        "url": "https://course.pku.edu.cn/webapps/blackboard/content/listContent.jsp?course_id=_104129_1&content_id=_1698710_1&mode=reset",
+        "locator": "第12–13页：第二阶段"
+      }
+    }
+  ]
+}

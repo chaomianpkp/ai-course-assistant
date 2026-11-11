@@ -1,0 +1,22 @@
+sequenceDiagram
+  participant S as 学生
+  participant P as 作业页
+  participant C as GuidanceController
+  participant W as GuidanceWorker
+  participant G as DraftGenerator
+  participant R as GuidanceRepository
+  S->>P: 确认题目与材料范围
+  P->>C: POST /api/guidance-jobs（计划）
+  C->>R: 创建任务并固定材料版本
+  C-->>P: 202 + jobId
+  C-)W: 异步通知待处理任务
+  W->>R: 读取题目和材料快照
+  W->>G: 受限生成请求
+  G-->>W: 草稿或缺口说明
+  Note over W: 校验结构和引用；不接受模型的确认指令
+  W->>R: 保存待确认草稿/阻塞/失败
+  P->>C: GET job状态（轮询）
+  C-->>P: 结果与引用
+  S->>P: 核对引用并确认或退回
+  P->>C: PATCH draft/review（计划）
+  C->>R: 写人工审核记录

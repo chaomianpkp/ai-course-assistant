@@ -1,0 +1,19 @@
+classDiagram
+  Course "1" --> "0..*" Schedule : 拥有
+  Schedule "0..*" --> "1" SourceRef : 依据
+  class Schedule {
+    id
+    weekday
+    periods
+    startTime
+    endTime
+    location
+    rawText
+    note
+    version
+  }
+  class SourceRef {
+    url
+    title
+    locator
+  }

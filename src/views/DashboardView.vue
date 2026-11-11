@@ -1,131 +1,53 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
+import { useCourseStore } from '../composables/useCourseStore'
 import { usePlatform } from '../composables/usePlatform'
-import { courseById, dueLabel, formatDue, todayHeadline, weekdays } from '../data/catalog'
 import { useRouter } from '../router'
 
-const { state, courses, deadlines, tasks, matchesCourse, toggleTask } = usePlatform()
+const { data, load, setDone } = useCourseStore()
+const { state } = usePlatform()
 const { push } = useRouter()
-const today = new Date().getDay()
-
-const visibleDeadlines = computed(() =>
-  deadlines
-    .filter((item) => matchesCourse(item.courseId))
-    .slice()
-    .sort((a, b) => new Date(a.due) - new Date(b.due)),
-)
-
-const visibleTasks = computed(() => tasks.value.filter((item) => matchesCourse(item.courseId)))
-
-function sessionsOn(weekday) {
-  return courses.filter((course) => course.weekday === weekday)
+const error = ref('')
+const saving = ref([])
+const filter = ref('pending')
+const courseName = (id) => data.courses.find((c) => c.id === id)?.name || id
+const matches = (item) => state.courseId === 'all' || item.courseId === state.courseId
+const schedules = computed(() => (data.schedules || []).filter(matches).sort((a,b)=>a.weekday-b.weekday || a.startTime.localeCompare(b.startTime)))
+const weekday = n => '一二三四五六日'[n-1]
+const materials = computed(() => data.materials.filter(matches))
+const deadlines = computed(() => data.deadlines.filter(matches).filter((d) => filter.value === 'all' || (filter.value === 'done' ? d.done : !d.done)).sort((a, b) => new Date(a.due) - new Date(b.due)))
+const unknownDeadlines = computed(() => data.materials.filter(matches).filter(d => d.category === '作业要求' && d.dueInfo && !d.dueInfo.due))
+const pending = computed(() => data.deadlines.filter(matches).filter((d) => !d.done).length)
+async function change(item, done) {
+  saving.value.push(item.id)
+  error.value = ''
+  try { await setDone(item.id, done) }
+  catch (e) { error.value = e.message }
+  finally { saving.value = saving.value.filter((id) => id !== item.id) }
 }
+const format = (due) => new Date(due).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false })
 </script>
-
 <template>
   <main class="page">
-    <p class="kicker">课程看板</p>
-    <h1>{{ todayHeadline() }}</h1>
-    <p class="lead">
-      把教室、上课时间和作业截止放在一处。任务来自课件、回放和作业要求，做完可以在这里勾掉。
-    </p>
-
-    <section class="week" aria-label="本周课表">
-      <article v-for="day in weekdays" :key="day.id" class="day" :class="{ today: day.id === today }">
-        <header>
-          <span>{{ day.label }}</span>
-          <span>{{ day.id === today ? '今天' : '' }}</span>
-        </header>
-        <div v-for="course in sessionsOn(day.id)" :key="course.id" class="session">
-          <strong><i class="dot" :style="{ '--accent': course.accent }"></i>{{ course.name }}</strong>
-          <p>{{ course.slot }} · {{ course.time }}</p>
-          <p>{{ course.room }}</p>
-        </div>
-        <p v-if="!sessionsOn(day.id).length" class="meta" style="margin-top: 18px">无课</p>
-      </article>
+    <p class="kicker">课程看板 · 第二阶段</p>
+    <h1>资料与截止，回到同一门课</h1>
+    <p class="lead">这里展示已保存的课程资料和你确认的截止时间。导入不包含个人提交记录，请核对后标记完成；标记仅用于个人跟进，不代表已向教学网提交。</p>
+    <div class="stats"><article><strong>{{ data.courses.length }}</strong><span>已导入课程</span></article><article><strong>{{ materials.length }}</strong><span>当前课程资料</span></article><article><strong>{{ pending }}</strong><span>未标记完成</span></article></div>
+    <div class="actions"><button class="primary" @click="push('/materials')">添加或查找资料</button><button class="ghost" :disabled="data.loading" @click="load">刷新课程数据</button></div>
+    <p v-if="error" class="note block" role="alert">{{ error }}</p>
+    <section aria-label="课程课表"><div class="section-title"><h2>课程课表</h2></div>
+      <div class="stack"><article v-for="item in schedules" :key="item.id" class="material"><span class="badge">{{ courseName(item.courseId) }}</span><h3>周{{ weekday(item.weekday) }} {{ item.startTime }}–{{ item.endTime }}（北京时间）</h3><p>第 {{ item.periods || '待确认' }} 节 · {{ item.location }}</p><p class="meta">{{ item.note }}</p><a class="cite" :href="item.source.url" target="_blank" rel="noopener noreferrer">核对课表原页 ↗</a><details><summary>查看课表原文</summary><p>{{ item.rawText }}</p><p class="meta">{{ item.source.title }} · {{ item.source.locator }} · 版本 {{ item.version }}</p></details></article><p v-if="!schedules.length" class="empty">尚未导入可确认的课表。请从课程信息页采集，或导入带来源的课表清单；不以示例课表替代。</p></div>
     </section>
-
-    <div class="split">
-      <section>
-        <div class="section-title">
-          <h2>近期截止</h2>
-          <span>{{ visibleDeadlines.length }} 项</span>
-        </div>
-        <div class="stack">
-          <button
-            v-for="item in visibleDeadlines"
-            :key="item.id"
-            class="deadline"
-            type="button"
-            @click="push(`/assignments?id=${item.id}`)"
-          >
-            <header>
-              <span class="badge" :class="dueLabel(item.due) === '明天截止' ? 'alert' : 'warn'">
-                {{ dueLabel(item.due) }}
-              </span>
-              <span class="badge">{{ item.sourceKind }}</span>
-            </header>
-            <h3>{{ item.title }}</h3>
-            <p>{{ courseById(item.courseId).name }} · {{ formatDue(item.due) }}</p>
-            <p class="meta">来源：{{ item.source }}</p>
-          </button>
-          <p v-if="!visibleDeadlines.length" class="empty">这门课暂时没有截止项。</p>
-        </div>
-      </section>
-
-      <section>
-        <div class="section-title">
-          <h2>可执行任务</h2>
-          <span>勾选后保存在本机</span>
-        </div>
-        <div class="stack">
-          <div v-for="task in visibleTasks" :key="task.id" class="task" :class="{ done: state.doneTaskIds.includes(task.id) }">
-            <input
-              type="checkbox"
-              :checked="state.doneTaskIds.includes(task.id)"
-              :aria-label="task.title"
-              @change="toggleTask(task.id)"
-            />
-            <span>
-              <h3>{{ task.title }}</h3>
-              <p class="meta">{{ courseById(task.courseId).name }}</p>
-              <span class="cites">
-                <button
-                  v-for="source in task.sources"
-                  :key="source.href"
-                  class="cite"
-                  type="button"
-                  @click="push(source.href)"
-                >
-                  {{ source.label }}
-                </button>
-              </span>
-            </span>
-          </div>
-          <p v-if="!visibleTasks.length" class="empty">这门课还没有生成任务。可以先去回放页整理一讲。</p>
-        </div>
-      </section>
+    <div class="section-title"><h2>截止清单</h2><select v-model="filter" aria-label="按完成状态筛选"><option value="pending">待完成</option><option value="done">已完成</option><option value="all">全部</option></select></div>
+    <div class="stack">
+      <article v-for="item in deadlines" :key="item.id" class="task" :class="{done: item.done}">
+        <input type="checkbox" :checked="item.done" :disabled="saving.includes(item.id)" :aria-label="`标记完成：${item.title}`" @change="change(item, $event.target.checked)" />
+        <div><span class="badge" :class="!item.done && new Date(item.due) < new Date() ? 'alert' : 'pine'">{{ item.done ? '已标记完成' : new Date(item.due) < new Date() ? '已过截止，待核实处理' : '未标记完成' }}</span><h3>{{ item.title }}</h3><p v-if="item.dueInfo?.note" class="note" :class="item.dueInfo.conflict ? 'block' : ''">{{ item.dueInfo.note }}</p><p>{{ courseName(item.courseId) }} · {{ format(item.due) }}（北京时间）</p><p class="meta">{{ item.source.title }} · {{ item.source.locator || '全文' }} · 版本 {{ item.version }}</p><a class="cite" :href="item.source.url" target="_blank" rel="noopener noreferrer">核对原始要求 ↗</a></div>
+      </article>
+      <p v-if="!deadlines.length" class="empty">{{ data.loading ? '正在读取…' : '当前没有符合条件的截止项。导入带截止时间的材料后，会显示在这里。' }}</p>
     </div>
-
-    <div class="section-title">
-      <h2>课程信息</h2>
-      <span>点一门课，只看它的资料和作业</span>
-    </div>
-    <div class="courses">
-      <button
-        v-for="course in courses"
-        :key="course.id"
-        class="course-card"
-        :class="{ selected: state.courseId === course.id }"
-        type="button"
-        :style="{ '--accent': course.accent }"
-        @click="state.courseId = course.id"
-      >
-        <span class="badge">{{ course.slot }}</span>
-        <h3>{{ course.name }}</h3>
-        <p>{{ course.time }}</p>
-        <p>{{ course.room }}</p>
-      </button>
-    </div>
+    <section v-if="unknownDeadlines.length"><div class="section-title"><h2>截止待确认</h2></div><article v-for="item in unknownDeadlines" :key="item.id" class="material"><h3>{{ item.title }}</h3><p class="meta">{{ courseName(item.courseId) }} · 未识别到明确截止时间</p><a class="cite" :href="item.source.url" target="_blank" rel="noopener noreferrer">核对作业原页 ↗</a></article></section>
+    <div class="section-title"><h2>最近保存的资料</h2><button class="ghost" @click="push('/materials')">查看全部资料</button></div>
+    <div class="stack"><article v-for="item in materials.slice(0, 5)" :key="item.id" class="material"><span class="badge">{{ courseName(item.courseId) }}</span><h3>{{ item.title }}</h3><p class="meta">{{ item.source.title }} · {{ item.category }} · 版本 {{ item.version }}</p></article></div>
   </main>
 </template>

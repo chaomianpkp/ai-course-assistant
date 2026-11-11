@@ -1,0 +1,42 @@
+classDiagram
+  class Course {
+    id
+    name
+  }
+  class SourceRef {
+    url
+    title
+    locator
+  }
+  class Material {
+    id
+    title
+    category
+  }
+  class MaterialVersion {
+    version
+    content
+    recordedAt
+  }
+  class ImportBatch {
+    id
+    createdAt
+    summary
+  }
+  class Deadline {
+    id
+    title
+    due
+  }
+  class Completion {
+    recordId
+    done
+  }
+  Course "1" -- "0..*" Material : 收录
+  Course "1" -- "0..*" Deadline : 归属
+  Material "1" *-- "1..*" MaterialVersion : 保留版本
+  MaterialVersion "0..*" --> "1" SourceRef : 引用
+  Deadline "0..*" --> "1" SourceRef : 依据
+  Deadline "1" -- "0..1" Completion : 完成状态
+  ImportBatch ..> Material : 导入/更新
+  ImportBatch ..> Deadline : 导入/更新

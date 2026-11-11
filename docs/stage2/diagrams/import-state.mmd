@@ -1,0 +1,16 @@
+stateDiagram-v2
+  [*] --> Awaiting
+  state "待导入" as Awaiting
+  state "校验中" as Validating
+  state "不合法" as Invalid
+  state "事务保存中" as Saving
+  state "完成" as Done
+  state "保存失败" as Failed
+  Awaiting --> Validating : 确认导入
+  Validating --> Invalid : 字段/来源不合法
+  Invalid --> Awaiting : 修改输入
+  Validating --> Saving : 全批次校验通过
+  Saving --> Done : 提交事务
+  Saving --> Failed : 回滚事务
+  Failed --> Awaiting : 重试
+  Done --> Awaiting : 继续导入

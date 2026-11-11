@@ -1,0 +1,13 @@
+flowchart TB
+  UI[界面包：Vue看板、资料页]
+  API[控制包：HTTP Handler]
+  Domain[领域包：CourseImport与验证]
+  Repo[数据包：CourseRepository]
+  DB[(SQLite：课程/记录/版本/学生状态)]
+  Future[作业辅导包：Controller/Worker/Generator，计划]
+  UI --> API
+  API --> Domain
+  API --> Repo
+  Repo --> DB
+  Future -. 读取已验证资料快照 .-> Repo
+  UI -. 后续任务接口 .-> Future

@@ -1,0 +1,19 @@
+stateDiagram-v2
+  [*] --> Queued
+  state "排队" as Queued
+  state "生成中" as Running
+  state "资料不足" as Blocked
+  state "失败" as Failed
+  state "待人工确认" as Pending
+  state "已确认" as Confirmed
+  state "已退回" as Rejected
+  Queued --> Running : Worker领取
+  Running --> Blocked : 缺少必要材料
+  Running --> Failed : 超时/引用校验失败
+  Running --> Pending : 内容与引用校验通过
+  Pending --> Confirmed : 学生确认
+  Pending --> Rejected : 学生退回
+  Blocked --> Queued : 补材料后新建请求
+  Failed --> Queued : 学生重试
+  Rejected --> Queued : 修改要求后新建请求
+  Confirmed --> [*]
